@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python/
+env/
+venv/
+*.env
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.vscode/
+
+# Poetry
+.poetry/
+.venv/
+# If poetry stores its venv inside the project, ignore it
+.venv/
+
+# Environment variables
+.env
+.env.*
+
+# IDEs
+.idea/
+*.iml
+
+# Database
+*.sqlite3
+*.db
+
+# Alembic
+alembic/versions/*.pyc
