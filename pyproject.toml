@@ -1,20 +1,20 @@
-# dwc_pos/pyproject.toml
+# D:\pythonproject\dwc_pos\pyproject.toml
 
 [tool.poetry]
-name = "dwc_pos"
+name = "dwc_pos" # Ini adalah nama proyek Poetry Anda
 version = "0.1.0"
 description = "Backend API for a professional Point of Sale system."
 authors = ["Your Name <your.email@example.com>"]
 license = "MIT"
 
-# --- UBAH BAGIAN INI ---
+# --- BAGIAN PENTING: PASTIKAN INI HANYA MENUNJUK KE FOLDER "app" ---
 packages = [
-    { include = "app" }
+    { include = "app" } # Ini memberitahu Poetry bahwa source code Anda ada di folder "app"
 ]
-# ----------------------
+# ------------------------------------------------------------------
 
 [tool.poetry.dependencies]
-python = "^3.11" # Atau versi Python Anda
+python = "^3.13.5" # Pastikan ini sesuai dengan versi Python Anda
 fastapi = "^0.111.0"
 uvicorn = {extras = ["standard"], version = "^0.30.1"}
 sqlalchemy = "^2.0.30"
@@ -24,6 +24,7 @@ python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 pydantic-settings = "^2.3.0"
 python-dotenv = "^1.0.1"
 alembic = "^1.13.1"
+asyncpg = "^0.30.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

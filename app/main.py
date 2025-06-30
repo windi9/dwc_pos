@@ -1,49 +1,62 @@
-# dwc_pos/app/main.py
+# D:\pythonproject\dwc_pos\app\main.py
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.db.connection import engine, Base # Import Base dan engine
-from app.core.config import settings # Import settings
+from fastapi.middleware.cors import CORSMiddleware
+from app.db.connection import engine, Base
+from app.core.config import settings
 import logging
+
+# Import the main API router for v1
+from app.api.v1.api import api_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
-# This function will run when the app starts and shuts down
+# Define lifespan context for application startup/shutdown events
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Application starting up...")
-    logger.info("Ensuring database tables exist (if not, creating them for initial setup/testing)...")
-    
-    # Import app.db.base to ensure all models are registered with Base.metadata
-    # This is crucial for Base.metadata.create_all to find all your models.
-    # In production, you'll primarily rely on Alembic migrations.
-    import app.db.base # This import makes sure all models defined in app/models are known to Base.metadata
-    
-    # Optional: Uncomment Base.metadata.create_all for initial table creation during development
-    # If you prefer to use Alembic from the start, keep this commented.
-    # Base.metadata.create_all(bind=engine) 
-    
-    logger.info("Database table check/creation completed (or skipped if using Alembic).")
-    logger.info("Application ready to serve requests.")
+    # Startup event: Initialize database (if not using Alembic for initial setup)
+    logging.info("Application startup...")
+    # Optional: If you want to create tables automatically on startup (less common with Alembic)
+    # Base.metadata.create_all(bind=engine)
     yield
-    logger.info("Application shutting down.")
-    logger.info("Application shutdown complete.")
+    # Shutdown event: Perform cleanup (e.g., close database connections if not handled by SQLAlchemy itself)
+    logging.info("Application shutdown.")
 
-# Initialize FastAPI app with settings
+# Initialize FastAPI app
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    version=settings.PROJECT_VERSION,
-    description="Professional Backend API for a DWC Point of Sale System with multiple interfaces.",
-    lifespan=lifespan # Apply the lifespan context manager
+    # Set the OpenAPI URL for Swagger UI and ReDoc
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    lifespan=lifespan # Include lifespan context
 )
 
-# --- Include main API router (akan dibuat di langkah selanjutnya) ---
-# from app.api.v1.api import api_router
-# app.include_router(api_router, prefix="/api/v1")
+# Configure CORS middleware
+# These origins allow requests from localhost.
+# You might need to add other frontend origins here (e.g., "http://localhost:3000" for a React app)
+origins = [
+    "http://localhost",
+    "http://localhost:8000", # The port Uvicorn is running on
+    # You can add more origins as needed for your frontend applications, e.g.:
+    # "http://localhost:3000",
+    # "http://192.168.1.100:8000",
+]
 
-# Root endpoint for health check
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,          # List of origins that are allowed to make requests
+    allow_credentials=True,         # Allow cookies to be included in cross-origin requests
+    allow_methods=["*"],            # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],            # Allow all headers in cross-origin requests
+)
+
+# Include the main API router for version 1
+# All routes defined in api_router will be prefixed with /api/v1
+app.include_router(api_router, prefix=settings.API_V1_STR)
+
+# Define a root endpoint for the API
+# This is optional but good for basic health checks or a welcome message
 @app.get("/")
-async def read_root():
-    return {"message": f"Welcome to {settings.PROJECT_NAME} v{settings.PROJECT_VERSION} API!"}
+def read_root():
+    return {"message": "Welcome to DWC POS API v1! Access the API documentation at /docs."}

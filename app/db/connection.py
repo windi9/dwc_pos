@@ -1,23 +1,44 @@
-# dwc_pos/app/db/connection.py
+# app/db/connection.py
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
-from app.core.config import settings # Import settings dari config.py
+# Ganti 'create_engine' dengan 'create_async_engine'
+# Ganti 'sessionmaker' dengan 'async_sessionmaker'
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base # Ini tetap sama
+from app.core.config import settings
 
-# SQLAlchemy Engine setup
-# DATABASE_URL is for synchronous operations (e.g., Alembic migrations, or sync endpoints)
-engine = create_engine(settings.DATABASE_URL, pool_pre_ping=True)
+# Define the database URL based on your settings
+# Pastikan ini menggunakan 'postgresql+asyncpg://'
+SQLALCHEMY_DATABASE_URL = settings.DATABASE_ASYNC_URL
 
-# SessionLocal class to create a new session for each request
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Create the SQLAlchemy ASYNC engine
+# Tambahkan 'future=True' untuk kompatibilitas SQLAlchemy 2.0
+engine = create_async_engine(
+    SQLALCHEMY_DATABASE_URL,
+    echo=True, # Biarkan ini untuk melihat query SQL di console (opsional)
+    future=True # Penting untuk mode 2.0
+)
 
-# Base class for our SQLAlchemy models
+# Create an AsyncSessionLocal class
+# Ganti SessionLocal dengan AsyncSessionLocal
+AsyncSessionLocal = async_sessionmaker(
+    engine,
+    expire_on_commit=False,
+    class_=AsyncSession # Penting: Tentukan class_ sebagai AsyncSession
+)
+
+# Base class for declarative models (ini tetap sama)
 Base = declarative_base()
 
-# Dependency to get a database session for FastAPI endpoints
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# --- UBAH FUNGSI get_db MENJADI ASYNC GENERATOR ---
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
+# --- END FUNGSI get_db ---
+
+# --- BAGIAN IMPOR SEMUA MODEL (biarkan ini sama seperti sebelumnya, ini sudah benar) ---
+import app.models.user
+import app.models.role
+import app.models.permission
+import app.models.user_role
+import app.models.role_permission
+# Tambahkan semua model Anda yang lain di sini

@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "DWC POS Backend" # Nama proyek yang sudah diperbarui
     PROJECT_VERSION: str = "0.1.0"
 
+    # API versioning string (e.g., "/api/v1")
+    API_V1_STR: str = "/api/v1"
+
     # Database settings
     DATABASE_URL: str
     DATABASE_ASYNC_URL: str # Untuk dukungan asyncpg di masa depan
