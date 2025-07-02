@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship # Pastikan ini diimpor
 
-from app.db.connection import Base # Pastikan import path benar
+from app.db.base import Base # Pastikan import path benar
 
 class Permission(Base):
     __tablename__ = "permissions"

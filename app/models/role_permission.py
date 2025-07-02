@@ -3,7 +3,7 @@
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.orm import relationship # Pastikan ini diimpor
 
-from app.db.connection import Base # Pastikan import path benar
+from app.db.base import Base # Pastikan import path benar
 
 class RolePermission(Base):
     __tablename__ = "role_permissions"
