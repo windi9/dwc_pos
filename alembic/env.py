@@ -41,6 +41,8 @@ import app.models.user_role
 import app.models.role_permission
 import app.models.company
 import app.models.outlet
+import app.models.uom
+import app.models.product
 # Jika ada model lain yang akan kita buat nanti, tambahkan juga di sini:
 # import app.models.product
 # import app.models.product_uom_conversion
