@@ -1,42 +1,48 @@
-# dwc_pos/app/schemas/user.py
+# app/schemas/user.py
 
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, List
 from datetime import datetime
+from typing import Optional
 
-# For user creation/update by admin
+# Untuk nested response dari Company
+from app.schemas.company import Company as CompanySchema # Asumsikan CompanySchema sudah ada
+
+# Schema dasar untuk membuat User
 class UserCreate(BaseModel):
-    username: str = Field(..., example="john_doe")
-    email: EmailStr = Field(..., example="john@example.com")
-    password: str = Field(..., example="secure_password") # Admin sets initial password
-    phone_number: Optional[str] = Field(None, example="+628123456789")
-    full_name: Optional[str] = Field(None, example="John Doe")
+    username: str = Field(..., min_length=3, max_length=50)
+    email: EmailStr
+    password: str = Field(..., min_length=8) # Password raw
+    full_name: Optional[str] = Field(None, max_length=100)
+    company_id: Optional[int] = None # Opsional, bisa null untuk superadmin
     is_active: Optional[bool] = True
-    email_verified: Optional[bool] = False # Admin can manually verify
-    pin: Optional[str] = Field(None, description="6-digit PIN for POS login, will be hashed if provided")
+    is_superuser: Optional[bool] = False
 
+# Schema untuk update User (semua opsional)
 class UserUpdate(BaseModel):
-    username: Optional[str] = Field(None, example="john_doe_new")
-    email: Optional[EmailStr] = Field(None, example="john.new@example.com")
-    password: Optional[str] = Field(None, example="new_secure_password")
-    phone_number: Optional[str] = Field(None, example="+6281234567890")
-    full_name: Optional[str] = Field(None, example="John Doe Updated")
+    username: Optional[str] = Field(None, min_length=3, max_length=50)
+    email: Optional[EmailStr] = None
+    password: Optional[str] = Field(None, min_length=8)
+    full_name: Optional[str] = Field(None, max_length=100)
+    company_id: Optional[int] = None
     is_active: Optional[bool] = None
-    email_verified: Optional[bool] = None
-    pin: Optional[str] = Field(None, description="6-digit PIN for POS login, will be hashed if provided")
+    is_superuser: Optional[bool] = None
 
-# For displaying user information (response model)
-class UserResponse(BaseModel):
+# Schema untuk respons User (output dari API)
+class User(BaseModel):
     id: int
+    company_id: Optional[int] = None
     username: str
     email: EmailStr
-    phone_number: Optional[str] = None
     full_name: Optional[str] = None
     is_active: bool
-    email_verified: bool
+    is_superuser: bool
     created_at: datetime
     updated_at: datetime
-    # No password or PIN in response for security
+    deleted_at: Optional[datetime] = None
+    
+    # Untuk menampilkan detail Company secara nested
+    # Gunakan CompanySchema yang sudah ada
+    company: Optional[CompanySchema] = None # Relasi ke Company
 
-    class Config:
-        from_attributes = True # Pydantic v2
+    class ConfigDict: # Gunakan ConfigDict untuk Pydantic v2+
+        from_attributes = True # Menggantikan orm_mode = True

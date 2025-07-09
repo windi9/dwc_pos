@@ -1,52 +1,39 @@
 # app/models/user.py
 
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Enum as SQLEnum, Text
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
-import enum
-
-from app.db.base import Base # <--- UBAH IMPOR BASE DARI SINI
-
-class UserAccessType(enum.Enum):
-    GLOBAL = "global"
-    OUTLET_SPECIFIC = "outlet_specific"
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, func, ForeignKey, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from typing import List, Optional
+from app.db.base import Base
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(50), unique=True, index=True, nullable=False)
-    email = Column(String(255), unique=True, index=True, nullable=False)
-    hashed_password = Column(String(255), nullable=False)
-    phone_number = Column(String(50), nullable=True)
-    full_name = Column(String(255), nullable=False)
-    pin = Column(String(255), nullable=True) # Untuk login POS
-    
-    # Menggunakan Boolean untuk is_active
-    is_active = Column(Boolean, default=True, nullable=False)
-    email_verified = Column(Boolean, default=False)
-    # Kolom untuk soft delete
-    deleted_at = Column(DateTime, nullable=True) 
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
 
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    company_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("companies.id"), nullable=True) 
 
-    # --- Kolom untuk Akses Pengguna Multi-Outlet ---
-    access_type = Column(
-        SQLEnum(UserAccessType),
-        nullable=False,
-        default=UserAccessType.OUTLET_SPECIFIC
-    )
-    outlet_id = Column(
-        Integer,
-        ForeignKey("outlets.id"),
-        nullable=True
-    )
+    # --- TAMBAHKAN DUA BARIS INI ---
+    outlet_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("outlets.id"), nullable=True)
+    # -------------------------------
 
-    # Relationships
-    roles = relationship("UserRole", back_populates="user")
-    outlet = relationship("Outlet", back_populates="users")
-    # production_orders = relationship("ProductionOrder", back_populates="producer")
+    username: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    email: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    full_name: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_superuser: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    deleted_at: Mapped[Optional[DateTime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    # Definisi relasi
+    company: Mapped[Optional["Company"]] = relationship("Company", back_populates="users")
+    user_roles: Mapped[List["UserRole"]] = relationship("UserRole", back_populates="user")
+
+    # --- TAMBAHKAN RELASI INI ---
+    outlet: Mapped[Optional["Outlet"]] = relationship("Outlet", back_populates="users")
+    # -----------------------------
 
     def __repr__(self):
-        return f"<User(id={self.id}, username='{self.username}', access_type='{self.access_type.value}', outlet_id={self.outlet_id}, is_active={self.is_active})>"
+        return f"<User(username='{self.username}', email='{self.email}')>"

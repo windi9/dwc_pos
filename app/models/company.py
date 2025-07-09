@@ -23,6 +23,7 @@ class Company(Base):
     # Tambahkan relationship ini
     products: Mapped[List["Product"]] = relationship("Product", back_populates="company")
     outlets: Mapped[List["Outlet"]] = relationship("Outlet", back_populates="company") # Ini mungkin sudah ada
+    users: Mapped[List["User"]] = relationship("User", back_populates="company")
 
     def __repr__(self):
         return f"<Company(name='{self.name}')>"

@@ -5,6 +5,7 @@ from fastapi import APIRouter
 from .endpoints import auth # Import your auth router
 from .endpoints import uoms
 from .endpoints import products
+from .endpoints import users
 
 api_router = APIRouter()
 
@@ -12,6 +13,7 @@ api_router = APIRouter()
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 api_router.include_router(uoms.router, prefix="/uoms", tags=["UOMs"]) 
 api_router.include_router(products.router, prefix="/products", tags=["Products"])
+api_router.include_router(users.router, prefix="/users", tags=["Users"])
 
 # You will include other routers here later (products, categories, etc.)
 # from app.api.v1.endpoints import users, products, categories

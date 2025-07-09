@@ -13,7 +13,7 @@ class UserRole(Base):
 
     # Definisi relasi
     # `back_populates` harus sesuai dengan nama relasi di model terkait
-    user = relationship("User", back_populates="roles")
+    user = relationship("User", back_populates="user_roles")
     role = relationship("Role", back_populates="users")
 
     def __repr__(self):

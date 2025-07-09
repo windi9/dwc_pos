@@ -2,9 +2,10 @@
 
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
 from sqlalchemy.sql import func
-from sqlalchemy.orm import relationship # Pastikan ini diimpor
+from sqlalchemy.orm import relationship, Mapped # Pastikan ini diimpor
 
 from app.db.base import Base # Pastikan import path benar
+from typing import List
 
 class Role(Base):
     __tablename__ = "roles"
@@ -19,7 +20,7 @@ class Role(Base):
     # Relationships
     # Gunakan string nama kelas untuk referensi forward declaration
     # Pastikan 'UserRole' dan 'RolePermission' adalah nama kelas yang benar
-    users = relationship("UserRole", back_populates="role")
+    users: Mapped[List["UserRole"]] = relationship("UserRole", back_populates="role")
     permissions = relationship("RolePermission", back_populates="role")
 
     def __repr__(self):
